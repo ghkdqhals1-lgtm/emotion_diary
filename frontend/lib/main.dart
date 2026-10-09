@@ -145,7 +145,7 @@ class _RecordPageState extends State<RecordPage> {
 }
 
 Future<void> _uploadBytes(List<int> bytes) async {
-  final url = Uri.parse('https://emotiondiary-production-8c03.up.railway.app/transcrib');
+  final url = Uri.parse('https://emotiondiary-production-8c03.up.railway.app/transcribe');
   final request = http.MultipartRequest('POST', url);
   request.headers['Authorization'] = 'Bearer ${widget.token}';
   request.files.add(
