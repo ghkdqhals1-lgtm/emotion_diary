@@ -355,7 +355,8 @@ def analyze_day(date: str, user_id: str = Depends(get_current_user)):
 
 {tone_text}
 
-목소리 톤 분석 결과가 있으면 글 내용을 우선하되 참고하고, 글과 톤이 다르면 요약에서 그 차이를 짚어줘.
+목소리 톤 분석 결과는 감정 판단의 참고로만 쓰고, 요약과 조언 문장에서 톤 분석이나 퍼센트 수치를 직접 언급하지 마. 
+글과 톤이 크게 다를 때만 자연스럽게 감정 표현에 녹여줘.
 
 이번 달에 이미 추천한 곡: {recent_songs_text}
 
