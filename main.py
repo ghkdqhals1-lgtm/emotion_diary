@@ -39,6 +39,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import asyncio
+from tone_model import analyze_tone, tone_hint_text
+
 load_dotenv()
 
 # Supabase 접속 정보 가져오기
@@ -198,6 +201,8 @@ async def transcribe_audio(file: UploadFile = File(...), user_id: str = Depends(
         )
     #transcript.text 안에 변환된 텍스트가 담겨 돌아옴
 
+    tone = await asyncio.to_thread(analyze_tone, temp_path)
+
 
     # 임시 파일 삭제
     os.remove(temp_path)
@@ -206,7 +211,8 @@ async def transcribe_audio(file: UploadFile = File(...), user_id: str = Depends(
     result = supabase.table("diary_entries").insert({
         "user_id": user_id,
         "text_content": transcript.text,
-        "recorded_at": now_kst
+        "recorded_at": now_kst,
+        "voice_tone": tone
     }).execute()
 
     return {"message": "저장 완료", "text": transcript.text, "data": result.data}
@@ -310,6 +316,7 @@ def analyze_day(date: str, user_id: str = Depends(get_current_user)):
     # 2. 텍스트들을 하나로 합치기(여러 개 기록에서 텍스트 부분만 추출해 리스트 작성)
     # 리스트를 줄바꿈으로 이어붙여 하나의 긴 텍스트로 합침
     combined_text = "\n".join([e["text_content"] for e in entries])
+    tone_text = tone_hint_text(entries)
     
 
      # 이번 달 시작일 계산
@@ -345,6 +352,10 @@ def analyze_day(date: str, user_id: str = Depends(get_current_user)):
                     "content": f"""다음은 하루 동안 기록된 일기입니다:
 
 {combined_text}
+
+{tone_text}
+
+목소리 톤 분석 결과가 있으면 글 내용을 우선하되 참고하고, 글과 톤이 다르면 요약에서 그 차이를 짚어줘.
 
 이번 달에 이미 추천한 곡: {recent_songs_text}
 
